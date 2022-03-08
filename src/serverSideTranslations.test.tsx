@@ -11,9 +11,7 @@ jest.mock('fs', () => ({
   readdirSync: jest.fn(),
 }))
 
-const DummyApp = appWithTranslation(() => (
-  <div>Hello world</div>
-))
+const DummyApp = appWithTranslation(() => <div>Hello world</div>)
 
 const props = {
   pageProps: {
@@ -32,12 +30,7 @@ const props = {
   },
 } as any
 
-const renderDummyComponent = () =>
-  renderToString(
-    <DummyApp
-      {...props}
-    />,
-  )
+const renderDummyComponent = () => renderToString(<DummyApp {...props} />)
 
 describe('serverSideTranslations', () => {
   beforeEach(() => {
@@ -48,18 +41,21 @@ describe('serverSideTranslations', () => {
   afterEach(jest.resetAllMocks)
 
   it('throws if initialLocale is not passed', async () => {
-    await expect(serverSideTranslations(undefined as any))
-      .rejects
-      .toThrow('Initial locale argument was not passed into serverSideTranslations')
+    await expect(serverSideTranslations(undefined as any)).rejects.toThrow(
+      'Initial locale argument was not passed into serverSideTranslations'
+    )
   })
 
-  describe('When namespacesRequired is not provided', ()=>{
-    beforeEach(() =>{
-      (fs.readdirSync as jest.Mock).mockImplementation((path)=>['common', `namespace-of-${path.split('/').pop()}`])
+  describe('When namespacesRequired is not provided', () => {
+    beforeEach(() => {
+      (fs.readdirSync as jest.Mock).mockImplementation((path) => [
+        'common',
+        `namespace-of-${path.split('/').pop()}`,
+      ])
     })
 
     it('returns all namespaces', async () => {
-      const props = await serverSideTranslations('en-US', undefined, {
+      const props = await serverSideTranslations()('en-US', undefined, {
         i18n: {
           defaultLocale: 'en-US',
           locales: ['en-US', 'fr-CA'],
@@ -67,18 +63,19 @@ describe('serverSideTranslations', () => {
       } as UserConfig)
       expect(fs.existsSync).toHaveBeenCalledTimes(0)
       expect(fs.readdirSync).toHaveBeenCalledTimes(1)
-      expect(fs.readdirSync).toHaveBeenCalledWith(expect.stringMatching('/public/locales/en-US'))
-      expect(props._nextI18Next.initialI18nStore)
-        .toEqual({
-          'en-US': {
-            common: {},
-            'namespace-of-en-US': {},
-          },
-        })
+      expect(fs.readdirSync).toHaveBeenCalledWith(
+        expect.stringMatching('/public/locales/en-US')
+      )
+      expect(props._nextI18Next.initialI18nStore).toEqual({
+        'en-US': {
+          common: {},
+          'namespace-of-en-US': {},
+        },
+      })
     })
 
     it('returns all namespaces with fallbackLng (as string)', async () => {
-      const props = await serverSideTranslations('en-US', undefined, {
+      const props = await serverSideTranslations()('en-US', undefined, {
         i18n: {
           defaultLocale: 'fr-BE',
           fallbackLng: 'fr',
@@ -86,94 +83,103 @@ describe('serverSideTranslations', () => {
         },
       } as UserConfig)
       expect(fs.readdirSync).toHaveBeenCalledTimes(2)
-      expect(fs.readdirSync).toHaveBeenCalledWith(expect.stringMatching('/public/locales/fr'))
-      expect(props._nextI18Next.initialI18nStore)
-        .toEqual({
-          'en-US': {
-            common: {},
-            'namespace-of-en-US': {},
-            'namespace-of-fr': {},
-          },
-          fr: {
-            common: {},
-            'namespace-of-en-US': {},
-            'namespace-of-fr': {},
-          },
-        })
+      expect(fs.readdirSync).toHaveBeenCalledWith(
+        expect.stringMatching('/public/locales/fr')
+      )
+      expect(props._nextI18Next.initialI18nStore).toEqual({
+        'en-US': {
+          common: {},
+          'namespace-of-en-US': {},
+          'namespace-of-fr': {},
+        },
+        fr: {
+          common: {},
+          'namespace-of-en-US': {},
+          'namespace-of-fr': {},
+        },
+      })
     })
 
     it('returns all namespaces with fallbackLng (as array)', async () => {
-      const props = await serverSideTranslations('en-US', undefined, {
+      const props = await serverSideTranslations()('en-US', undefined, {
         i18n: {
           defaultLocale: 'en-US',
-          fallbackLng: ['en','fr'],
+          fallbackLng: ['en', 'fr'],
           locales: ['en-US', 'fr-CA'],
         },
       } as UserConfig)
       expect(fs.readdirSync).toHaveBeenCalledTimes(3)
-      expect(fs.readdirSync).toHaveBeenCalledWith(expect.stringMatching('/public/locales/en-US'))
-      expect(fs.readdirSync).toHaveBeenCalledWith(expect.stringMatching('/public/locales/en'))
-      expect(fs.readdirSync).toHaveBeenCalledWith(expect.stringMatching('/public/locales/fr'))
-      expect(props._nextI18Next.initialI18nStore)
-        .toEqual({
-          en: {
-            common: {},
-            'namespace-of-en': {},
-            'namespace-of-en-US': {},
-            'namespace-of-fr': {},
-          },
-          'en-US': {
-            common: {},
-            'namespace-of-en': {},
-            'namespace-of-en-US': {},
-            'namespace-of-fr': {},
-          },
-          fr: {
-            common: {},
-            'namespace-of-en': {},
-            'namespace-of-en-US': {},
-            'namespace-of-fr': {},
-          },
-        })
+      expect(fs.readdirSync).toHaveBeenCalledWith(
+        expect.stringMatching('/public/locales/en-US')
+      )
+      expect(fs.readdirSync).toHaveBeenCalledWith(
+        expect.stringMatching('/public/locales/en')
+      )
+      expect(fs.readdirSync).toHaveBeenCalledWith(
+        expect.stringMatching('/public/locales/fr')
+      )
+      expect(props._nextI18Next.initialI18nStore).toEqual({
+        en: {
+          common: {},
+          'namespace-of-en': {},
+          'namespace-of-en-US': {},
+          'namespace-of-fr': {},
+        },
+        'en-US': {
+          common: {},
+          'namespace-of-en': {},
+          'namespace-of-en-US': {},
+          'namespace-of-fr': {},
+        },
+        fr: {
+          common: {},
+          'namespace-of-en': {},
+          'namespace-of-en-US': {},
+          'namespace-of-fr': {},
+        },
+      })
     })
 
     it('returns all namespaces with fallbackLng (as object)', async () => {
-      const props = await serverSideTranslations('en-US', undefined, {
+      const props = await serverSideTranslations()('en-US', undefined, {
         i18n: {
           defaultLocale: 'nl-BE',
-          fallbackLng: {default:['fr'], 'nl-BE':['en']},
+          fallbackLng: { default: ['fr'], 'nl-BE': ['en'] },
           locales: ['nl-BE', 'fr-BE'],
         },
       } as UserConfig)
       expect(fs.readdirSync).toHaveBeenCalledTimes(3)
-      expect(fs.readdirSync).toHaveBeenCalledWith(expect.stringMatching('/public/locales/en'))
-      expect(fs.readdirSync).toHaveBeenCalledWith(expect.stringMatching('/public/locales/fr'))
-      expect(props._nextI18Next.initialI18nStore)
-        .toEqual({
-          en: {
-            common: {},
-            'namespace-of-en': {},
-            'namespace-of-en-US': {},
-            'namespace-of-fr': {},
-          },
-          'en-US': {
-            common: {},
-            'namespace-of-en': {},
-            'namespace-of-en-US': {},
-            'namespace-of-fr': {},
-          },
-          fr: {
-            common: {},
-            'namespace-of-en': {},
-            'namespace-of-en-US': {},
-            'namespace-of-fr': {},
-          },
-        })
+      expect(fs.readdirSync).toHaveBeenCalledWith(
+        expect.stringMatching('/public/locales/en')
+      )
+      expect(fs.readdirSync).toHaveBeenCalledWith(
+        expect.stringMatching('/public/locales/fr')
+      )
+      expect(props._nextI18Next.initialI18nStore).toEqual({
+        en: {
+          common: {},
+          'namespace-of-en': {},
+          'namespace-of-en-US': {},
+          'namespace-of-fr': {},
+        },
+        'en-US': {
+          common: {},
+          'namespace-of-en': {},
+          'namespace-of-en-US': {},
+          'namespace-of-fr': {},
+        },
+        fr: {
+          common: {},
+          'namespace-of-en': {},
+          'namespace-of-en-US': {},
+          'namespace-of-fr': {},
+        },
+      })
     })
   })
 
   it('returns props', async () => {
-    const props = await serverSideTranslations('en-US', [], {
+    const props = await serverSideTranslations()('en-US', [], {
       i18n: {
         defaultLocale: 'en-US',
         locales: ['en-US', 'fr-CA'],
@@ -203,7 +209,7 @@ describe('serverSideTranslations', () => {
       globalI18n.reloadResources = jest.fn()
     }
 
-    await serverSideTranslations('en-US', [], {
+    await serverSideTranslations()('en-US', [], {
       i18n: {
         defaultLocale: 'en-US',
         locales: ['en-US', 'fr-CA'],
@@ -221,7 +227,7 @@ describe('serverSideTranslations', () => {
       globalI18n.reloadResources = jest.fn()
     }
 
-    await serverSideTranslations('en-US', [], {
+    await serverSideTranslations()('en-US', [], {
       i18n: {
         defaultLocale: 'en-US',
         locales: ['en-US', 'fr-CA'],
@@ -233,7 +239,11 @@ describe('serverSideTranslations', () => {
   })
 
   it('throws if a function is used for localePath and namespaces are not provided', async () => {
-    const localePathFn: UserConfig['localePath'] = (locale, namespace, missing) => `${missing}/${namespace}/${locale}.json`
+    const localePathFn: UserConfig['localePath'] = (
+      locale,
+      namespace,
+      missing
+    ) => `${missing}/${namespace}/${locale}.json`
     const config: UserConfig = {
       i18n: {
         defaultLocale: 'en',
@@ -242,7 +252,11 @@ describe('serverSideTranslations', () => {
       localePath: localePathFn,
       ns: ['common'],
     }
-    await expect(serverSideTranslations('en-US', undefined, config))
-      .rejects.toMatchObject({ message: 'Must provide namespacesRequired to serverSideTranslations when using a function as localePath' })
+    await expect(
+      serverSideTranslations()('en-US', undefined, config)
+    ).rejects.toMatchObject({
+      message:
+        'Must provide namespacesRequired to serverSideTranslations when using a function as localePath',
+    })
   })
 })
